@@ -36,7 +36,7 @@
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type `relative)
+(setq display-line-numbers-type 'relative)
 
 (defconst sys/win32p
   (eq system-type 'windows-nt)
@@ -45,15 +45,39 @@
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/second_brain/")
-;; Windows specific settings
+;; Overwrite some settings on Windows
 (when sys/win32p
   (setq org-directory "c:/Users/laik/PycharmProjects/second_brain/")
   )
 
 (after! org
-  (setq org-agenda-skip-scheduled-if-done t)
-  (setq org-agenda-skip-deadline-if-done t)
+  (setq org-agenda-skip-scheduled-if-done t
+        org-agenda-skip-deadline-if-done t
+        org-agenda-skip-scheduled-if-deadline-is-shown t
+        org-deadline-warning-days 7)
 )
+
+;; skip any item that passes its DEADLINE or marked as DONE or CANCELLED
+(defun my/org-skip-task-if-done-or-past-deadline ()
+  (let ((subtree-end (save-excursion (org-end-of-subtree t)))
+        (deadline (org-entry-get nil "DEADLINE")))
+    (if (or (member (org-get-todo-state) '("DONE" "CANCELLED"))
+            (and deadline
+                 (time< (org-time-string-to-time deadline) (current-time))))
+        subtree-end
+      nil)))
+
+;; (setq org-agenda-custom-commands
+;;       '(("c" "Custom Agenda"
+;;          agenda ""
+;;          ((org-agenda-skip-function 'my/org-skip-task-if-done-or-past-deadline)))))
+(setq org-agenda-skip-function
+      (lambda ()
+        (let ((subtree-end (save-excursion (org-end-of-subtree t))))
+          (if (member (org-get-todo-state) '("DONE" "CANCELLED"))
+              subtree-end
+            nil))))
+
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
