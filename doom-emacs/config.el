@@ -54,8 +54,10 @@
   (setq org-agenda-skip-scheduled-if-done t
         org-agenda-skip-deadline-if-done t
         org-agenda-skip-scheduled-if-deadline-is-shown t
-        org-deadline-warning-days 7)
+        org-deadline-warning-days 7
+        org-log-into-drawer "NOTES")
 )
+
 
 ;; skip any item that passes its DEADLINE or marked as DONE or CANCELLED
 (defun my/org-skip-task-if-done-or-past-deadline ()
